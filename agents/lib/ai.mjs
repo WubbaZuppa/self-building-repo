@@ -72,13 +72,13 @@ async function generateWithNativeFetch(systemPrompt, userMessage, isJSON = false
 
   const discovered = await getAvailableModels(apiKey);
 
-  // Preferred order of models for fast and structured text generation
+  // Preferred order of models for free-tier quota (1500 RPD guaranteed)
   const fallbackCandidates = [
     'gemini-1.5-flash',
-    'gemini-1.5-flash-latest',
-    'gemini-2.0-flash',
+    'gemini-1.5-flash-8b',
+    'gemini-2.5-flash',
     'gemini-1.5-pro',
-    'gemma-4-26b-a4b-it'
+    'gemini-2.0-flash-lite'
   ];
 
   // Prioritize flash/pro models over gemma for better JSON adherence
