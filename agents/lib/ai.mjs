@@ -20,13 +20,37 @@ async function retryRequest(requestFn, maxRetries = 3) {
   }
 }
 
-// Dynamically discover available models for this API key
+// Robustly extract JSON object from text even if model adds markdown or preamble
+function extractJSON(text) {
+  if (!text) throw new Error("Empty response from AI model.");
+
+  // 1. Try markdown code block matcher ```json ... ```
+  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (codeBlockMatch && codeBlockMatch[1]) {
+    try {
+      return JSON.parse(codeBlockMatch[1].trim());
+    } catch (e) {}
+  }
+
+  // 2. Try slicing from first '{' to last '}'
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    const candidate = text.slice(firstBrace, lastBrace + 1).trim();
+    try {
+      return JSON.parse(candidate);
+    } catch (e) {}
+  }
+
+  // 3. Direct parse fallback
+  return JSON.parse(text.trim());
+}
+
 async function getAvailableModels(apiKey) {
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
     if (!res.ok) {
-      const errText = await res.text();
-      console.warn(`[AI] Could not list models (${res.status}): ${errText}`);
+      console.warn(`[AI] Could not list models (${res.status})`);
       return [];
     }
     const data = await res.json();
@@ -34,7 +58,7 @@ async function getAvailableModels(apiKey) {
       .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
       .map(m => m.name.replace(/^models\//, ''));
     
-    console.log(`[AI] Discovered ${models.length} available models for API key:`, models.slice(0, 5).join(', '));
+    console.log(`[AI] Discovered ${models.length} models for API key:`, models.slice(0, 5).join(', '));
     return models;
   } catch (err) {
     console.warn('[AI] Error querying available models:', err.message);
@@ -46,22 +70,28 @@ async function generateWithNativeFetch(systemPrompt, userMessage, isJSON = false
   const config = getConfig();
   const apiKey = config.geminiApiKey;
 
-  // 1. Discover models dynamically
   const discovered = await getAvailableModels(apiKey);
-  
-  // Default candidates list if discovery returned empty
+
+  // Preferred order of models for fast and structured text generation
   const fallbackCandidates = [
-    'gemini-2.0-flash',
-    'gemini-2.0-flash-lite',
     'gemini-1.5-flash',
-    'gemini-1.5-flash-8b',
-    'gemini-1.5-pro'
+    'gemini-1.5-flash-latest',
+    'gemini-2.0-flash',
+    'gemini-1.5-pro',
+    'gemma-4-26b-a4b-it'
   ];
 
-  // Prioritize discovered models, fallback to defaults
-  const candidateModels = Array.from(new Set([...discovered, ...fallbackCandidates]));
+  // Prioritize flash/pro models over gemma for better JSON adherence
+  const candidateModels = Array.from(new Set([
+    ...fallbackCandidates.filter(m => discovered.includes(m)),
+    ...discovered,
+    ...fallbackCandidates
+  ]));
 
-  const fullPrompt = `SYSTEM INSTRUCTIONS:\n${systemPrompt}\n\nUSER REQUEST:\n${userMessage}`;
+  let fullPrompt = `SYSTEM INSTRUCTIONS:\n${systemPrompt}\n\nUSER REQUEST:\n${userMessage}`;
+  if (isJSON) {
+    fullPrompt += `\n\nCRITICAL REQUIREMENT: Return ONLY a valid, parsable JSON object. Do not include any introductory or concluding text, explanations, or commentary outside the JSON block.`;
+  }
 
   let lastError;
 
@@ -90,9 +120,9 @@ async function generateWithNativeFetch(systemPrompt, userMessage, isJSON = false
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.warn(`[AI] Model ${modelName} returned status ${response.status}: ${errorText}`);
-        lastError = new Error(`Status ${response.status}: ${errorText}`);
-        continue; // Try next candidate
+        console.warn(`[AI] Model ${modelName} status ${response.status}: ${errorText.slice(0, 150)}`);
+        lastError = new Error(`Status ${response.status}`);
+        continue;
       }
 
       const data = await response.json();
@@ -101,11 +131,9 @@ async function generateWithNativeFetch(systemPrompt, userMessage, isJSON = false
       if (text) {
         console.log(`[AI] Success with model: ${modelName}`);
         return text;
-      } else {
-        console.warn(`[AI] Model ${modelName} returned empty text response.`);
       }
     } catch (err) {
-      console.warn(`[AI] Model ${modelName} request error:`, err.message);
+      console.warn(`[AI] Model ${modelName} error:`, err.message);
       lastError = err;
     }
   }
@@ -122,7 +150,6 @@ export async function chat(systemPrompt, userMessage, options = {}) {
 export async function chatJSON(systemPrompt, userMessage) {
   return retryRequest(async () => {
     const rawText = await generateWithNativeFetch(systemPrompt, userMessage, true);
-    let text = rawText.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
-    return JSON.parse(text);
+    return extractJSON(rawText);
   });
 }
