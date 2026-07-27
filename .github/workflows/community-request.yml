@@ -1,0 +1,61 @@
+name: "🌟 Community Feature Request"
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: community-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  community-request:
+    if: github.event.issue.user.login != 'github-actions[bot]' && github.actor != 'github-actions[bot]' && ((github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'feature-request')) || (github.event_name == 'issue_comment' && contains(github.event.issue.labels.*.name, 'build-this')))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.AGENT_TOKEN }}
+          
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Set Issue Number
+        run: echo "ISSUE_NUMBER=${{ github.event.issue.number }}" >> $GITHUB_ENV
+        
+      - name: Acknowledge Request
+        if: github.event_name == 'issues'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.AGENT_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Hello! 🎯 I am the Planner Agent! I see your feature request. If you want me to evaluate and build this, please ensure it has the `build-this` label.'
+            });
+
+      - name: Evaluate and Plan
+        if: contains(github.event.issue.labels.*.name, 'build-this')
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.AGENT_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node agents/planner.mjs --issue $ISSUE_NUMBER
+        
+      - name: Log success
+        run: echo "Community request handled successfully!"
