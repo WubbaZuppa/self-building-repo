@@ -21,36 +21,48 @@ async function retryRequest(requestFn, maxRetries = 3) {
   }
 }
 
-function getModel(systemPrompt, isJSON = false) {
+const CANDIDATE_MODELS = [
+  'gemini-1.5-flash-latest',
+  'gemini-1.5-flash',
+  'gemini-2.0-flash-exp',
+  'gemini-1.5-pro-latest'
+];
+
+async function generateWithFallback(systemPrompt, userMessage, isJSON = false) {
   const config = getConfig();
   const genAI = new GoogleGenerativeAI(config.geminiApiKey);
   
-  const generationConfig = {};
-  if (isJSON) {
-    generationConfig.responseMimeType = "application/json";
+  const fullPrompt = `SYSTEM INSTRUCTIONS:\n${systemPrompt}\n\nUSER REQUEST:\n${userMessage}`;
+  
+  let lastError;
+  const modelsToTry = [config.model, ...CANDIDATE_MODELS.filter(m => m !== config.model)];
+  
+  for (const modelName of modelsToTry) {
+    try {
+      console.log(`[AI] Attempting request with model: ${modelName}`);
+      const generationConfig = isJSON ? { responseMimeType: "application/json" } : {};
+      const model = genAI.getGenerativeModel({ model: modelName, generationConfig });
+      const result = await model.generateContent(fullPrompt);
+      const text = result.response.text();
+      if (text) return text;
+    } catch (err) {
+      console.warn(`[AI] Model ${modelName} failed:`, err.message);
+      lastError = err;
+    }
   }
-
-  return genAI.getGenerativeModel({
-    model: config.model,
-    systemInstruction: systemPrompt,
-    generationConfig
-  });
+  throw new Error(`All AI model attempts failed. Last error: ${lastError?.message}`);
 }
 
 export async function chat(systemPrompt, userMessage, options = {}) {
   return retryRequest(async () => {
-    const model = getModel(systemPrompt);
-    const result = await model.generateContent(userMessage);
-    return result.response.text();
+    return await generateWithFallback(systemPrompt, userMessage, false);
   });
 }
 
 export async function chatJSON(systemPrompt, userMessage) {
   return retryRequest(async () => {
-    const model = getModel(systemPrompt, true);
-    const result = await model.generateContent(userMessage);
-    let text = result.response.text();
-    text = text.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    const rawText = await generateWithFallback(systemPrompt, userMessage, true);
+    let text = rawText.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
     return JSON.parse(text);
   });
 }
