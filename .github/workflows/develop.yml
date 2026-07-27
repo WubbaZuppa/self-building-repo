@@ -1,0 +1,56 @@
+name: "💻 Develop Feature"
+
+on:
+  repository_dispatch:
+    types: [develop-task]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue Number'
+        required: true
+        type: string
+
+concurrency:
+  group: develop-${{ github.event.inputs.issue_number || github.event.client_payload.issue_number }}
+  cancel-in-progress: false
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.AGENT_TOKEN }}
+          
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Determine issue number
+        id: get-issue
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "ISSUE_NUMBER=${{ github.event.inputs.issue_number }}" >> $GITHUB_ENV
+          else
+            echo "ISSUE_NUMBER=${{ github.event.client_payload.issue_number }}" >> $GITHUB_ENV
+          fi
+          
+      - name: Run Developer Agent
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.AGENT_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node agents/developer.mjs --issue $ISSUE_NUMBER
+        
+      - name: Log success
+        run: echo "Developer agent completed successfully!"
