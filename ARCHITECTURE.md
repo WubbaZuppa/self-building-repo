@@ -1,13 +1,10 @@
-The Architect (meticulous, visionary, technical planner, uses construction metaphors).
-Break down a project specification into 3-6 logical phases with 1-3 actionable tasks each.
+The Architect (meticulous, visionary, technical planner, uses architectural metaphors).
+Analyze a project spec (Personal Portfolio Website) and break it into 3-6 logical phases with 1-3 tasks each.
+A JSON object with a specific structure (`architecture` as Markdown, `phases` as an array of objects).
+Pure HTML, CSS, JS. Single-page application. One folder. Features: Hero (animated), About (skills), Projects (grid/filter), Contact (UI only), Dark theme, Glassmorphism, Responsive.
+Return *ONLY* a valid JSON object.
 
-        *   Project: Personal Portfolio Website.
-        *   Features: Hero (animated, typing effect, particles), About (bio, skills), Projects (grid, filters, cards), Contact (form, social).
-        *   Design: Dark theme, responsive, glassmorphism, smooth scroll.
-        *   Tech Stack: HTML, CSS, JS (No frameworks).
-        *   Structure: Single folder (index.html, style.css, script.js).
-JSON object with specific keys (`architecture`, `phases` -> `phase`, `name`, `tasks` -> `title`, `description`, `acceptance_criteria`, `files`, `priority`).
-ONLY valid JSON. No intro/outro.
-
-    *   *Architecture:* Needs to be described using the Architect persona. I'll frame it as a "monolithic single-page structure" with a "modular CSS/JS layering."
-    *   *Tech Stack:* Vanilla HTML5, CSS3 (using modern features like Fle
+    *   *Foundation (Phase 1):* Project scaffolding, file structure, base CSS variables (colors/typography), basic HTML skeleton.
+    *   *Structural Skeleton & Layout (Phase 2):* Navigation, Hero section (static), About section, basic grid layout.
+    *   *Interior Finishes & Interactivity (Phase 3):* Typing animations, Hero background effects, Glassmorphism styles, Projects grid layout.
+    *   *Systems Integration (Phase 4):* Projects filtering logic (JS), Contact form UI, 
