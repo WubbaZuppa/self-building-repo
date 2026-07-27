@@ -83,15 +83,12 @@ Every issue, every PR, every comment — it's all the agents working together. Y
 
 <!-- SELF-BUILD:PROGRESS:START -->
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| — | ⏳ Waiting | *Push a `PROJECT_SPEC.md` to start the build!* |
+### 🏗️ Project Progress
 
-```
-Progress: ░░░░░░░░░░░░░░░░░░░░ 0%
-```
+[███████░░░░░░░░░░░░░] 33%
+**Completed:** 1 / **Total:** 3 tasks.
 
-**Status:** 🟡 Waiting for spec...
+*(Last updated: 2026-07-27T01:47:40.742Z)*
 
 <!-- SELF-BUILD:PROGRESS:END -->
 
