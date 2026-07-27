@@ -1,15 +1,10 @@
 {
-  "phases": {
-    "1": {
-      "name": "Initial Core Implementation",
-      "status": "in_progress"
-    }
-  },
-  "issues": {
-    "6": {
-      "phase": 1,
-      "status": "ready"
-    }
-  },
-  "currentPhase": 1
+  "current_phase": null,
+  "total_phases": 0,
+  "completed_issues": [],
+  "active_issue": null,
+  "status": "waiting_for_spec",
+  "started_at": null,
+  "last_updated": null,
+  "build_log": []
 }
