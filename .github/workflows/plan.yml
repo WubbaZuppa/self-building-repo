@@ -3,8 +3,6 @@ name: "🎯 Plan Project"
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - 'PROJECT_SPEC.md'
   workflow_dispatch:
 
 concurrency:
