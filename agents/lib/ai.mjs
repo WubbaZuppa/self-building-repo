@@ -14,7 +14,7 @@ async function retryRequest(requestFn, maxRetries = 3) {
       if (attempt >= maxRetries) {
         throw new Error(`AI request failed after ${maxRetries} attempts: ${error.message}`);
       }
-      const backoff = Math.pow(2, attempt) * 1000;
+      const backoff = Math.pow(2, attempt) * 2000;
       console.log(`[AI] Waiting ${backoff}ms before retrying...`);
       await delay(backoff);
     }
