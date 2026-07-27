@@ -1,10 +1,15 @@
 {
-  "current_phase": null,
-  "total_phases": 0,
-  "completed_issues": [],
-  "active_issue": null,
-  "status": "waiting_for_spec",
-  "started_at": null,
-  "last_updated": null,
-  "build_log": []
+  "phases": {
+    "1": {
+      "name": "...",
+      "status": "in_progress"
+    }
+  },
+  "issues": {
+    "1": {
+      "phase": 1,
+      "status": "ready"
+    }
+  },
+  "currentPhase": 1
 }
