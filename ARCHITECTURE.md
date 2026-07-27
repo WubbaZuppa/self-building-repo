@@ -1,14 +1,13 @@
-The Architect (meticulous, visionary, technical planner).
-Break down a "Personal Portfolio Website" project specification into 3-6 logical phases with 1-3 tasks each.
+The Architect (meticulous, visionary, technical planner, uses construction metaphors).
+Break down a "Personal Portfolio Website" project into 3-6 logical phases with 1-3 tasks each.
+JSON.
+A single-page portfolio with hero, about, projects, and contact sections. Tech stack: HTML, CSS, JS (no frameworks). Dark theme, glassmorphism, responsive.
 
-        *   Features: Hero (animations, typing effect), About (bio, skills), Projects (grid, cards, filters), Contact (UI only).
-        *   Design: Dark theme, purple/blue gradient, responsive, smooth scroll, glassmorphism.
-        *   Tech Stack: Pure HTML, CSS, JS (Single page, single folder).
-JSON object with specific structure (`architecture` and `phases`).
-        *   `architecture`: Markdown text.
-        *   `phases`: Array of objects (phase, name, tasks).
-        *   `tasks`: Object (title, description, acceptance_criteria, files, priority).
-Return *ONLY* valid JSON. No markdown outside the JSON block (the user said "Return ONLY a valid, parsable JSON object").
+        *   `architecture`: Markdown text describing the tech stack and structure.
+        *   `phases`: Array of phase objects.
+        *   Each phase: `phase` (int), `name` (string), `tasks` (array).
+        *   Each task: `title`, `description`, `acceptance_criteria` (array), `files` (array), `priority` (string).
 
-    *   *Phase 1: Foundation & Core Structure.* Setup files, HTML boilerplate, CSS reset, basic layout.
-    *   *Phase 2: Visual Identity & Hero Impleme
+    *   *Phase 1: Foundation (The Bedrock)* - Project structure, HTML boilerplate, basic CSS reset, and layout shell.
+    *   *Phase 2: Interior Framework (The Structure)* - Implementing the sections (Hero, About, Projects, Contact) with basic styling.
+    *   *Phase 3: Aesthetic Finishes (The Facade)* - Glassmorphism, gradients, dark
