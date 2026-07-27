@@ -42,7 +42,19 @@ function extractJSON(text) {
     } catch (e) {}
   }
 
-  // 3. Direct parse fallback
+  // Helper to fix unescaped raw newlines inside JSON string properties
+  const cleanJSONString = (str) => {
+    return str.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, (match) => {
+      return match.replace(/\r?\n/g, '\\n');
+    });
+  };
+
+  // 3. Try with sanitized string
+  try {
+    return JSON.parse(cleanJSONString(text.trim()));
+  } catch (e) {}
+
+  // 4. Direct parse fallback
   return JSON.parse(text.trim());
 }
 
@@ -108,7 +120,7 @@ async function generateWithNativeFetch(systemPrompt, userMessage, isJSON = false
         ]
       };
 
-      if (isJSON) {
+      if (isJSON && modelName.startsWith('gemini')) {
         payload.generationConfig = { responseMimeType: "application/json" };
       }
 
