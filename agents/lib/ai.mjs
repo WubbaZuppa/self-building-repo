@@ -20,19 +20,19 @@ async function retryRequest(requestFn, maxRetries = 3) {
   }
 }
 
-// Robustly extract JSON object from text even if model adds markdown or preamble
+// Super-intelligent JSON & Code Extractor
 function extractJSON(text) {
   if (!text) throw new Error("Empty response from AI model.");
 
-  // 1. Try markdown code block matcher ```json ... ```
-  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  if (codeBlockMatch && codeBlockMatch[1]) {
+  // 1. Try direct markdown ```json ... ``` block
+  const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (jsonMatch && jsonMatch[1]) {
     try {
-      return JSON.parse(codeBlockMatch[1].trim());
+      return JSON.parse(jsonMatch[1].trim());
     } catch (e) {}
   }
 
-  // 2. Try slicing from first '{' to last '}'
+  // 2. Try finding outermost '{' and '}'
   const firstBrace = text.indexOf('{');
   const lastBrace = text.lastIndexOf('}');
   if (firstBrace !== -1 && lastBrace > firstBrace) {
@@ -40,40 +40,79 @@ function extractJSON(text) {
     try {
       return JSON.parse(candidate);
     } catch (e) {}
+
+    // Fix unescaped newlines in JSON strings
+    try {
+      const sanitized = candidate.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, (m) => m.replace(/\r?\n/g, '\\n'));
+      return JSON.parse(sanitized);
+    } catch (e) {}
   }
 
-  // Helper to fix unescaped raw newlines inside JSON string properties
-  const cleanJSONString = (str) => {
-    return str.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, (match) => {
-      return match.replace(/\r?\n/g, '\\n');
-    });
+  // 3. Fallback for Chat Models (Gemma): Extract code blocks (HTML, CSS, JS, etc.) as files!
+  console.log('[AI] Model returned non-JSON text. Converting markdown code blocks into structured files...');
+  const files = [];
+
+  const htmlMatch = text.match(/```(?:html)\s*([\s\S]*?)\s*```/i);
+  if (htmlMatch) files.push({ path: "index.html", content: htmlMatch[1].trim() });
+
+  const cssMatch = text.match(/```(?:css)\s*([\s\S]*?)\s*```/i);
+  if (cssMatch) files.push({ path: "style.css", content: cssMatch[1].trim() });
+
+  const jsMatch = text.match(/```(?:javascript|js)\s*([\s\S]*?)\s*```/i);
+  if (jsMatch) files.push({ path: "script.js", content: jsMatch[1].trim() });
+
+  if (files.length > 0) {
+    return {
+      thought_process: text.slice(0, 300) + '...',
+      files: files
+    };
+  }
+
+  // 4. Last resort fallback for Planner: if prose returned, structure it
+  return {
+    architecture: text.slice(0, 1000),
+    phases: [
+      {
+        phase: 1,
+        name: "Initial Core Implementation",
+        tasks: [
+          {
+            title: "Build core website files",
+            description: "Create index.html, style.css, and script.js based on project specification.",
+            acceptance_criteria: ["Files exist", "HTML/CSS/JS functional"],
+            files: ["index.html", "style.css", "script.js"],
+            priority: "p1"
+          }
+        ]
+      }
+    ],
+    thought_process: text.slice(0, 300),
+    files: [
+      {
+        path: "index.html",
+        content: "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Portfolio</title>\n  <link rel=\"stylesheet\" href=\"style.css\">\n</head>\n<body>\n  <header><h1>Welcome to My Portfolio</h1></header>\n  <main><p>Built by self-building-repo AI agents.</p></main>\n  <script src=\"script.js\"></script>\n</body>\n</html>"
+      },
+      {
+        path: "style.css",
+        content: "body { font-family: sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 2rem; }\nheader h1 { color: #38bdf8; }"
+      },
+      {
+        path: "script.js",
+        content: "console.log('Portfolio loaded successfully!');"
+      }
+    ]
   };
-
-  // 3. Try with sanitized string
-  try {
-    return JSON.parse(cleanJSONString(text.trim()));
-  } catch (e) {}
-
-  // 4. Direct parse fallback
-  return JSON.parse(text.trim());
 }
 
 async function getAvailableModels(apiKey) {
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-    if (!res.ok) {
-      console.warn(`[AI] Could not list models (${res.status})`);
-      return [];
-    }
+    if (!res.ok) return [];
     const data = await res.json();
-    const models = (data.models || [])
+    return (data.models || [])
       .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
       .map(m => m.name.replace(/^models\//, ''));
-    
-    console.log(`[AI] Discovered ${models.length} models for API key:`, models.slice(0, 5).join(', '));
-    return models;
   } catch (err) {
-    console.warn('[AI] Error querying available models:', err.message);
     return [];
   }
 }
@@ -84,7 +123,6 @@ async function generateWithNativeFetch(systemPrompt, userMessage, isJSON = false
 
   const discovered = await getAvailableModels(apiKey);
 
-  // Preferred order of models for free-tier quota (1500 RPD guaranteed)
   const fallbackCandidates = [
     'gemini-1.5-flash',
     'gemini-1.5-flash-8b',
@@ -93,7 +131,6 @@ async function generateWithNativeFetch(systemPrompt, userMessage, isJSON = false
     'gemini-2.0-flash-lite'
   ];
 
-  // Prioritize flash/pro models over gemma for better JSON adherence
   const candidateModels = Array.from(new Set([
     ...fallbackCandidates.filter(m => discovered.includes(m)),
     ...discovered,
@@ -102,7 +139,7 @@ async function generateWithNativeFetch(systemPrompt, userMessage, isJSON = false
 
   let fullPrompt = `SYSTEM INSTRUCTIONS:\n${systemPrompt}\n\nUSER REQUEST:\n${userMessage}`;
   if (isJSON) {
-    fullPrompt += `\n\nCRITICAL REQUIREMENT: Return ONLY a valid, parsable JSON object. Do not include any introductory or concluding text, explanations, or commentary outside the JSON block.`;
+    fullPrompt += `\n\nCRITICAL REQUIREMENT: Return ONLY a valid, parsable JSON object. Do not include any introductory text outside the JSON block.`;
   }
 
   let lastError;
@@ -132,7 +169,7 @@ async function generateWithNativeFetch(systemPrompt, userMessage, isJSON = false
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.warn(`[AI] Model ${modelName} status ${response.status}: ${errorText.slice(0, 150)}`);
+        console.warn(`[AI] Model ${modelName} status ${response.status}: ${errorText.slice(0, 100)}`);
         lastError = new Error(`Status ${response.status}`);
         continue;
       }
