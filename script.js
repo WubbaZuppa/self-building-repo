@@ -65,21 +65,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Contact Form Simulation
+  // Contact Form GitHub Issue Integration
   const contactForm = document.getElementById('contact-form');
   const formStatus = document.getElementById('form-status');
 
   if (contactForm) {
     contactForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      formStatus.textContent = '⚡ Sending message...';
+      const nameInput = contactForm.querySelector('input[type="text"]');
+      const emailInput = contactForm.querySelector('input[type="email"]');
+      const messageInput = contactForm.querySelector('textarea');
+
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const message = messageInput.value.trim();
+
+      if (!name || !email || !message) return;
+
+      formStatus.textContent = '⚡ Opening GitHub Issue...';
       formStatus.style.color = '#38bdf8';
 
+      const title = encodeURIComponent(`📬 Message from ${name}`);
+      const body = encodeURIComponent(`### 📬 New Contact Form Message\n\n**From:** ${name} (<${email}>)\n\n**Message:**\n${message}\n\n---\n*Sent via AI Portfolio Contact Form*`);
+      
+      const issueUrl = `https://github.com/WubbaZuppa/self-building-repo/issues/new?title=${title}&body=${body}&labels=feature-request`;
+
       setTimeout(() => {
-        formStatus.textContent = '🎉 Message sent successfully! Thanks for reaching out.';
+        window.open(issueUrl, '_blank');
+        formStatus.textContent = '🎉 GitHub Issue page opened! Click "Submit new issue" to post.';
         formStatus.style.color = '#4ade80';
         contactForm.reset();
-      }, 1500);
+      }, 800);
     });
   }
 });
