@@ -1,8 +1,214 @@
-<nav>...</nav>
-            <main>
-              <section id="hero">...</section>
-              <section id="about">...</section>
-              <section id="projects">...</section>
-              <section id="contact">...</section>
-            </main>
-            <footer>...</footer>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Developer Portfolio | Built Autonomously by AI</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Background Glow & Grid -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="#" class="logo">
+        <span class="logo-icon">🏗️</span>
+        <span class="logo-text">AI.Portfolio</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#contact" class="btn-nav">Get in Touch</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="badge-ai">🤖 Built Autonomously by self-building-repo</div>
+      <h1 class="hero-title">
+        Hi, I'm <span class="gradient-text">Creative Builder</span>
+      </h1>
+      <h2 class="hero-subtitle">
+        I am a <span id="typing-text" class="typing"></span><span class="cursor">&nbsp;</span>
+      </h2>
+      <p class="hero-desc">
+        Crafting high-performance web applications, interactive user experiences, and innovative AI solutions with cutting-edge design aesthetics.
+      </p>
+      <div class="hero-actions">
+        <a href="#projects" class="btn btn-primary">View My Work</a>
+        <a href="#contact" class="btn btn-secondary">Contact Me</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="section">
+    <div class="section-container">
+      <h2 class="section-title"><span class="gradient-text">About Me</span></h2>
+      <div class="about-grid">
+        <div class="about-card glass">
+          <div class="about-icon">⚡</div>
+          <h3>Fast Learner & Adaptable</h3>
+          <p>Passionate about learning new technologies and pushing the boundaries of what is possible on the modern web.</p>
+        </div>
+        <div class="about-card glass">
+          <div class="about-icon">🎨</div>
+          <h3>UI/UX Perfectionist</h3>
+          <p>Designing sleek glassmorphic interfaces with vibrant color palettes and micro-animations that engage users.</p>
+        </div>
+        <div class="about-card glass">
+          <div class="about-icon">🤖</div>
+          <h3>AI Integration Specialist</h3>
+          <p>Building next-generation applications powered by LLMs, multi-agent frameworks, and autonomous automation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Projects Section -->
+  <section id="projects" class="section">
+    <div class="section-container">
+      <h2 class="section-title"><span class="gradient-text">Featured Projects</span></h2>
+      
+      <!-- Project Filters -->
+      <div class="project-filters">
+        <button class="filter-btn active" data-filter="all">All Projects</button>
+        <button class="filter-btn" data-filter="web">Web Apps</button>
+        <button class="filter-btn" data-filter="ai">AI / Automation</button>
+        <button class="filter-btn" data-filter="ui">UI Design</button>
+      </div>
+
+      <!-- Project Cards Grid -->
+      <div class="projects-grid">
+        <!-- Card 1 -->
+        <div class="project-card glass" data-category="ai">
+          <div class="project-banner banner-1">
+            <span class="category-tag">AI / GitHub</span>
+          </div>
+          <div class="project-info">
+            <h3>self-building-repo</h3>
+            <p>An autonomous GitHub repository that writes, reviews, and deploys its own code using AI agents.</p>
+            <div class="project-tags">
+              <span>Node.js</span>
+              <span>Gemini API</span>
+              <span>GitHub Actions</span>
+            </div>
+            <a href="https://github.com/WubbaZuppa/self-building-repo" target="_blank" class="project-link">View Repo &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="project-card glass" data-category="web">
+          <div class="project-banner banner-2">
+            <span class="category-tag">Web Application</span>
+          </div>
+          <div class="project-info">
+            <h3>Nexus Dashboard</h3>
+            <p>A real-time analytics & crypto tracking dashboard with interactive glassmorphism components.</p>
+            <div class="project-tags">
+              <span>JavaScript</span>
+              <span>Chart.js</span>
+              <span>CSS Grid</span>
+            </div>
+            <a href="#" class="project-link">Live Demo &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="project-card glass" data-category="ui">
+          <div class="project-banner banner-3">
+            <span class="category-tag">UI / UX</span>
+          </div>
+          <div class="project-info">
+            <h3>CyberSpace Design System</h3>
+            <p>A futuristic Dark Mode design system for modern web and mobile SaaS applications.</p>
+            <div class="project-tags">
+              <span>Figma</span>
+              <span>Vanilla CSS</span>
+              <span>Design Tokens</span>
+            </div>
+            <a href="#" class="project-link">View System &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills Section -->
+  <section id="skills" class="section">
+    <div class="section-container">
+      <h2 class="section-title"><span class="gradient-text">Skills & Expertise</span></h2>
+      <div class="skills-grid">
+        <div class="skill-item glass">
+          <div class="skill-head">
+            <span>JavaScript / ES2024</span>
+            <span>95%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 95%;"></div></div>
+        </div>
+        <div class="skill-item glass">
+          <div class="skill-head">
+            <span>Modern HTML5 & CSS3</span>
+            <span>90%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 90%;"></div></div>
+        </div>
+        <div class="skill-item glass">
+          <div class="skill-head">
+            <span>AI Prompting & Agents</span>
+            <span>92%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 92%;"></div></div>
+        </div>
+        <div class="skill-item glass">
+          <div class="skill-head">
+            <span>GitHub Actions & CI/CD</span>
+            <span>88%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 88%;"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact" class="section">
+    <div class="section-container">
+      <div class="contact-box glass">
+        <h2 class="section-title"><span class="gradient-text">Let's Work Together</span></h2>
+        <p class="contact-subtitle">Have a project in mind or want to collaborate on AI-driven apps?</p>
+        <form class="contact-form" id="contact-form">
+          <div class="form-group">
+            <input type="text" placeholder="Your Name" required />
+          </div>
+          <div class="form-group">
+            <input type="email" placeholder="Your Email" required />
+          </div>
+          <div class="form-group">
+            <textarea rows="4" placeholder="Your Message..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Send Message 🚀</button>
+          <div id="form-status" class="form-status"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>⚡ Built autonomously by <strong><a href="https://github.com/WubbaZuppa/self-building-repo" target="_blank">self-building-repo</a></strong> AI agents &bull; MIT Licensed</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
