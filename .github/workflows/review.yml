@@ -1,0 +1,64 @@
+name: "🔍 Review Code"
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  repository_dispatch:
+    types: [review-pr]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR Number'
+        required: true
+        type: string
+
+concurrency:
+  group: review-${{ github.event.pull_request.number || github.event.inputs.pr_number || github.event.client_payload.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: >
+      github.event_name == 'repository_dispatch' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'self-build') && !contains(github.event.pull_request.labels.*.name, 'reviewed'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.AGENT_TOKEN }}
+          
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Determine PR number
+        id: get-pr
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "PR_NUMBER=${{ github.event.inputs.pr_number }}" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            echo "PR_NUMBER=${{ github.event.client_payload.pr_number }}" >> $GITHUB_ENV
+          else
+            echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          fi
+          
+      - name: Run Reviewer Agent
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.AGENT_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node agents/reviewer.mjs --pr $PR_NUMBER
+        
+      - name: Log success
+        run: echo "Reviewer agent completed successfully!"
