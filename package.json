@@ -1,0 +1,26 @@
+{
+  "name": "self-building-repo",
+  "version": "1.0.0",
+  "description": "🏗️ This repo builds itself. You describe what you want, AI agents do the rest.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "plan": "node agents/planner.mjs",
+    "develop": "node agents/developer.mjs",
+    "review": "node agents/reviewer.mjs",
+    "track": "node agents/tracker.mjs"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "@octokit/rest": "^21.1.1"
+  },
+  "license": "MIT",
+  "keywords": [
+    "ai",
+    "autonomous",
+    "self-building",
+    "agents",
+    "github-actions",
+    "gemini"
+  ]
+}
